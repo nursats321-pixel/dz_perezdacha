@@ -1,0 +1,13 @@
+asgiref==3.12.1
+certifi==2026.7.22
+channels==4.3.2
+channels_redis==4.3.0
+charset-normalizer==3.5.1
+Django==6.1.1
+docker==7.2.0
+idna==3.19
+msgpack==1.2.2
+redis==8.1.0
+requests==2.34.2
+sqlparse==0.6.0
+urllib3==2.7.0

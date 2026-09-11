@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+
+        .user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 12px 0;
+            font-size: 18px;
+        }
+
+        .status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: gray;
+        }
+
+        .status.online {
+            background: green;
+        }
+
+        .status-text {
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Chat</h1>
+
+    <p>
+        Вы вошли как:
+        <strong>{{ user.username }}</strong>
+    </p>
+
+    <h2>Пользователи</h2>
+
+    <div id="users">
+
+        {% for person in users %}
+
+            <div class="user" data-user-id="{{ person.id }}">
+
+                <span
+                    class="status {% if person.id in online_users %}online{% endif %}"
+                ></span>
+
+                <strong>{{ person.username }}</strong>
+
+                <span class="status-text">
+                    {% if person.id in online_users %}
+                        — онлайн
+                    {% else %}
+                        — офлайн
+                    {% endif %}
+                </span>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    <script>
+
+        // Сообщаем серверу, что текущий пользователь онлайн
+        function sendHeartbeat() {
+            fetch("/heartbeat/", {
+                method: "GET",
+                credentials: "same-origin"
+            });
+        }
+
+
+        // Получаем актуальный список пользователей
+        function updateUsers() {
+
+            fetch("/online-users/", {
+                credentials: "same-origin"
+            })
+            .then(response => response.json())
+            .then(data => {
+
+                data.users.forEach(user => {
+
+                    const element = document.querySelector(
+                        `[data-user-id="${user.id}"]`
+                    );
+
+                    if (!element) {
+                        return;
+                    }
+
+                    const status = element.querySelector(".status");
+                    const statusText = element.querySelector(".status-text");
+
+                    if (user.online) {
+
+                        status.classList.add("online");
+                        statusText.textContent = "— онлайн";
+
+                    } else {
+
+                        status.classList.remove("online");
+                        statusText.textContent = "— офлайн";
+
+                    }
+
+                });
+
+            });
+
+        }
+
+
+        // Сразу отмечаем себя онлайн
+        sendHeartbeat();
+
+        // Обновляем каждые 5 секунд
+        setInterval(sendHeartbeat, 5000);
+
+        // Проверяем пользователей каждые 3 секунды
+        setInterval(updateUsers, 3000);
+
+        // Проверяем сразу
+        updateUsers();
+
+    </script>
+
+</body>
+</html>
